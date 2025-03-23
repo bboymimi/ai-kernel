@@ -53,18 +53,10 @@ async def analyze_stack_trace(
         code_contexts = await extractor.extract_code_for_symbols(stack_trace.symbols)
         
         if debug:
-            console.print("\n[bold yellow]Extracted Code Contexts:[/bold yellow]")
-
             # Display RIP code context first if available
             if stack_trace.rip_symbol and stack_trace.rip_symbol in code_contexts:
                 console.print("\n[bold red]RIP Symbol Code:[/bold red]")
                 console.print(Syntax(code_contexts[stack_trace.rip_symbol], "c", theme="monokai"))
-
-            # Display other code contexts
-            for symbol, code in code_contexts.items():
-                if symbol != stack_trace.rip_symbol:  # Skip RIP symbol as it's already shown
-                    console.print(f"\n[bold]{symbol}:[/bold]")
-                    console.print(Syntax(code, "c", theme="monokai"))
         
         # Analyze with AI only if not in debug mode
         if not debug:
