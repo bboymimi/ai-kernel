@@ -193,6 +193,11 @@ class CodeExtractor:
             # Parse cscope output
             # Format: file line_number function_name
             lines = result.stdout.strip().split('\n')
+
+            # Collect all valid locations
+            c_files = []
+            h_files = []
+
             for line in lines:
                 parts = line.split()
                 if len(parts) >= 2:
@@ -200,15 +205,24 @@ class CodeExtractor:
                     line_num = int(parts[2])
                     
                     # Check if this is actually the function definition
-                    if await self._verify_function_definition(file_path, line_num, symbol):
-                        return file_path, line_num
+                    if await self._verify_function_definition_internal(file_path, line_num, symbol):
+                        if file_path.endswith('.c'):
+                            c_files.append((file_path, line_num))
+                        elif file_path.endswith('.h'):
+                            h_files.append((file_path, line_num))
+
+            # Prefer .c files over .h files, but use .h if no .c files are found
+            if c_files:
+                return c_files[0]
+            elif h_files:
+                return h_files[0]
             return None
             
         except Exception:
             return None
-    
-    async def _verify_function_definition(self, file_path: str, line_num: int, symbol: str) -> bool:
-        """Verify that the given location is actually a function definition."""
+
+    async def _verify_function_definition_internal(self, file_path: str, line_num: int, symbol: str) -> bool:
+        """Internal helper to verify function definition without file extension check."""
         try:
             full_path = self.kernel_src_path / file_path
             with open(full_path, 'r') as f:
@@ -231,10 +245,23 @@ class CodeExtractor:
                 rf'\.globl\s+{re.escape(symbol)}',
                 rf'{re.escape(symbol)}:',
             ]
-            return any(re.search(pattern, context_text) for pattern in patterns)
+
+            # First check if it's a function definition
+            if not any(re.search(pattern, context_text) for pattern in patterns):
+                return False
+
+            # Now check if it's not just a macro or empty function
+            if '#define' in context_text:
+                return False
+
+            return True
             
         except Exception:
             return False
+
+    async def _verify_function_definition(self, file_path: str, line_num: int, symbol: str) -> bool:
+        """Verify that the given location is actually a function definition."""
+        return await self._verify_function_definition_internal(file_path, line_num, symbol)
     
     async def _read_function_code(self, file_path: str, start_line: int) -> str:
         """Read the function code starting from the given line."""
