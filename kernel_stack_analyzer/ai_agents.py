@@ -52,22 +52,35 @@ class StackTraceAnalyzer:
 Error Type: {stack_trace.error_type}
 Error Message: {stack_trace.error_message}
 
-Stack Trace:
 """
+        # Add RIP information if available
+        if stack_trace.rip_frame:
+            prompt += f"""Instruction Pointer (RIP):
+Symbol: {stack_trace.rip_frame.symbol}
+Offset: {stack_trace.rip_frame.offset}
+"""
+            if stack_trace.rip_symbol in code_contexts:
+                prompt += f"""
+RIP Symbol Code:
+{code_contexts[stack_trace.rip_symbol]}
+"""
+
+        prompt += "\nStack Trace:\n"
         for i, frame in enumerate(stack_trace.frames):
             prompt += f"\n{i+1}. {frame.symbol}"
             if frame.offset:
                 prompt += f" +{frame.offset}"
             prompt += "\n"
-            if frame.symbol in code_contexts:
+            if frame.symbol in code_contexts and frame.symbol != stack_trace.rip_symbol:  # Skip RIP code as it's already shown
                 prompt += f"Code:\n{code_contexts[frame.symbol]}\n"
         
         prompt += """
 Please provide:
-1. A high-level summary of what this stack trace represents
-2. The sequence of events that led to this error
-3. Potential root causes based on the code analysis
-4. Suggestions for debugging or fixing the issue
+1. A high-level summary of what this stack trace represents, focusing on the instruction pointer location
+2. Analysis of the code at the RIP location and its role in the error
+3. The sequence of events that led to this error
+4. Potential root causes based on the code analysis
+5. Suggestions for debugging or fixing the issue
 """
         return prompt
 

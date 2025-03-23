@@ -31,7 +31,14 @@ async def analyze_stack_trace(
             console.print("\n[bold yellow]Parsed Stack Trace:[/bold yellow]")
             console.print(f"Error Type: {stack_trace.error_type}")
             console.print(f"Error Message: {stack_trace.error_message}")
-            console.print("\nStack Frames:")
+
+            # Display RIP information if available
+            if stack_trace.rip_frame:
+                console.print("\n[bold red]RIP (Instruction Pointer):[/bold red]")
+                console.print(f"Symbol: {stack_trace.rip_frame.symbol}")
+                console.print(f"Offset: {stack_trace.rip_frame.offset}")
+
+            console.print("\n[bold yellow]Stack Frames:[/bold yellow]")
             for i, frame in enumerate(stack_trace.frames, 1):
                 console.print(f"{i}. {frame.symbol} ({frame.address})")
                 if frame.offset:
@@ -47,9 +54,17 @@ async def analyze_stack_trace(
         
         if debug:
             console.print("\n[bold yellow]Extracted Code Contexts:[/bold yellow]")
+
+            # Display RIP code context first if available
+            if stack_trace.rip_symbol and stack_trace.rip_symbol in code_contexts:
+                console.print("\n[bold red]RIP Symbol Code:[/bold red]")
+                console.print(Syntax(code_contexts[stack_trace.rip_symbol], "c", theme="monokai"))
+
+            # Display other code contexts
             for symbol, code in code_contexts.items():
-                console.print(f"\n[bold]{symbol}:[/bold]")
-                console.print(Syntax(code, "c", theme="monokai"))
+                if symbol != stack_trace.rip_symbol:  # Skip RIP symbol as it's already shown
+                    console.print(f"\n[bold]{symbol}:[/bold]")
+                    console.print(Syntax(code, "c", theme="monokai"))
         
         # Analyze with AI only if not in debug mode
         if not debug:

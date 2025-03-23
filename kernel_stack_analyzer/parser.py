@@ -24,8 +24,23 @@ class StackTrace:
     
     @property
     def symbols(self) -> List[str]:
-        """Get list of symbols in the stack trace."""
-        return [frame.symbol.lstrip('?').strip() for frame in self.frames]
+        """Get list of symbols in the stack trace, including RIP symbol if available."""
+        symbols = [frame.symbol.lstrip('?').strip() for frame in self.frames]
+        if self.rip_symbol and self.rip_symbol not in symbols:
+            symbols.insert(0, self.rip_symbol)
+        return symbols
+
+    @property
+    def rip_frame(self) -> Optional[StackFrame]:
+        """Get the RIP frame if available."""
+        if self.rip_info:
+            return StackFrame(
+                address="",  # RIP address is handled differently
+                symbol=self.rip_info['symbol'],
+                offset=f"{self.rip_info['offset']}/{self.rip_info['size']}",
+                is_exported=True
+            )
+        return None
 
     @property
     def rip_symbol(self) -> Optional[str]:
