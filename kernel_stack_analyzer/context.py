@@ -2,7 +2,6 @@ import os
 from typing import Dict, Optional
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
-from rich.console import Console
 
 load_dotenv()
 
@@ -12,7 +11,6 @@ class ContextAnalyzer:
     def __init__(self, context_type: str, debug: bool = False):
         self.context_type = context_type
         self.debug = debug
-        self.console = Console()
         if not debug:
             self.client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         

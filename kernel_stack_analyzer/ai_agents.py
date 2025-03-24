@@ -3,8 +3,6 @@ from typing import Dict, List
 import asyncio
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
-from rich.console import Console
-from rich.syntax import Syntax
 
 load_dotenv()
 
@@ -13,7 +11,6 @@ class StackTraceAnalyzer:
     
     def __init__(self, debug: bool = False):
         self.debug = debug
-        self.console = Console()
         if not debug:
             self.client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         
@@ -89,7 +86,6 @@ class MultiTraceAnalyzer:
     
     def __init__(self, debug: bool = False):
         self.debug = debug
-        self.console = Console()
         if not debug:
             self.analyzer = StackTraceAnalyzer(debug=debug)
         else:

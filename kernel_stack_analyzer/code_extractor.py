@@ -4,14 +4,12 @@ from typing import Dict, List, Optional, Tuple
 import subprocess
 import re
 import os
-from rich.console import Console
 
 class CodeExtractor:
     """Extracts source code for kernel symbols."""
     
     def __init__(self, kernel_src_path: Optional[str] = None):
         self.kernel_src_path = Path(kernel_src_path) if kernel_src_path else None
-        self.console = Console()
         self.cscope_db_path = None
         
     async def setup_cscope(self) -> bool:
@@ -26,11 +24,11 @@ class CodeExtractor:
                 self.cscope_db_path = str(cscope_out)
                 return True
                 
-            self.console.print("[red]No cscope database found. Please run 'make cscope' in the kernel source directory.[/red]")
+            print("No cscope database found. Please run 'make cscope' in the kernel source directory.")
             return False
             
         except Exception as e:
-            self.console.print(f"[red]Error setting up cscope: {str(e)}[/red]")
+            print(f"Error setting up cscope: {str(e)}")
             return False
         
     async def extract_code_for_symbols(self, symbols: List[str]) -> Dict[str, str]:
