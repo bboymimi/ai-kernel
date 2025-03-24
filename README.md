@@ -26,11 +26,24 @@ pip install -r requirements.txt
 ```
 OPENAI_API_KEY=your_api_key_here
 ```
+or
+```bash
+export OPENAI_API_KEY=your_api_key_here
+```
 
 ## Usage
 
+1. Prepare the linux kernel source code and build the cscope database.
 ```bash
-python -m kernel_stack_analyzer analyze --input stack_trace.txt --context kernel_panic
+cscope -Rbq
+```
+2. Run the analyzer:
+```bash
+python -m kernel_stack_analyzer --input panic.txt --context kernel_panic --kernel-src ~/linux-kernel-source/
+```
+or you can run with debug mode to get the prompt for other LLM models:
+```bash
+python -m kernel_stack_analyzer --input panic.txt --context kernel_panic --kernel-src ~/linux-kernel-source/ --debug
 ```
 
 ## Project Structure
