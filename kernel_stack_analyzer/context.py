@@ -47,7 +47,8 @@ class ContextAnalyzer:
             "softlockup": "You are an expert in analyzing soft lockups and system hangs.",
             "kasan_uaf": "You are an expert in analyzing use-after-free bugs and memory corruption.",
             "kasan_oob": "You are an expert in analyzing out-of-bounds access bugs.",
-            "hung_task": "You are an expert in analyzing hung tasks and process deadlocks."
+            "hung_task": "You are an expert in analyzing hung tasks and process deadlocks.",
+            "warning": "You are an expert in analyzing kernel warnings and potential issues."
         }
         return prompts.get(self.context_type, "You are an expert kernel developer.")
     
@@ -88,6 +89,13 @@ Analyze this hung task stack trace and provide:
 2. The blocking condition
 3. Potential deadlock scenarios
 4. Recommendations for preventing task hangs
+""",
+            "warning": """
+Analyze this kernel warning and provide:
+1. The subsystem or driver that generated the warning
+2. The specific condition that triggered the warning
+3. Potential impact of this warning on system stability or performance
+4. Recommendations for investigating or resolving the warning
 """
         }
         

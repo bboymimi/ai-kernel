@@ -85,17 +85,25 @@ async def analyze_stack_trace(
         raise
 
 def main():
-    parser = argparse.ArgumentParser(description="Analyze kernel stack traces using AI")
-    parser.add_argument("--input", required=True, help="Input stack trace file")
-    parser.add_argument("--context", required=True, choices=[
-        "kernel_panic", "softlockup", "kasan_uaf", "kasan_oob", "hung_task"
-    ], help="Type of kernel error context")
-    parser.add_argument("--kernel-src", help="Path to kernel source code")
-    parser.add_argument("--debug", action="store_true", help="Print debug information")
+    arg_parser = argparse.ArgumentParser(description="Analyze kernel stack traces using AI")
+    arg_parser.add_argument("--input", required=True, help="Input stack trace file")
+    arg_parser.add_argument("--kernel-src", help="Path to kernel source code")
+    arg_parser.add_argument("--debug", action="store_true", help="Print debug information")
     
-    args = parser.parse_args()
+    args = arg_parser.parse_args()
     
-    asyncio.run(analyze_stack_trace(args.input, args.context, args.kernel_src, args.debug))
+    # Parse the stack trace once
+    trace_parser = StackTraceParser()
+    parsed_stack_trace_data = trace_parser.parse_file(args.input)
+
+    # Validate that the detected error type is supported
+    supported_contexts = ["kernel_panic", "softlockup", "kasan_uaf", "kasan_oob", "hung_task", "warning"]
+    if parsed_stack_trace_data.error_type not in supported_contexts:
+        print(f"Warning: Detected error type '{parsed_stack_trace_data.error_type}' is not supported.")
+        print("Supported error types are:", ", ".join(supported_contexts))
+        print("Analysis may be less accurate.")
+
+    asyncio.run(analyze_stack_trace(args.input, parsed_stack_trace_data.error_type, args.kernel_src, args.debug))
 
 if __name__ == "__main__":
     main() 

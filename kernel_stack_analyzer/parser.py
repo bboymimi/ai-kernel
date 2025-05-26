@@ -95,6 +95,9 @@ class StackTraceParser:
             elif "hung task" in line:
                 error_type = "hung_task"
                 error_message = line
+            elif "WARNING:" in line:
+                error_type = "warning"
+                error_message = line
                 
             # Parse RIP line
             rip_match = re.search(r'RIP:\s*[0-9a-f]+:([^+]+)\+([^/]+)/([^]\s]+)', line)
